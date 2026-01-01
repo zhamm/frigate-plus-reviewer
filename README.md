@@ -174,10 +174,10 @@ processing:
   dry_run: false  # Set to true to test without submitting
   state_file: "state.json"  # Track processed events
   submission_method: "snapshot"  # or "event"
-  mark_as_reviewed: true  # Mark events as reviewed in Frigate UI
+  mark_as_reviewed: false  # Mark events as reviewed in Frigate UI
 ```
 
-**Important:** `mark_as_reviewed` controls whether events are marked as reviewed in your local Frigate NVR after successful submission to Frigate+. When `true`, processed events are removed from the review queue in Frigate's UI, preventing duplicate manual reviews.
+**Note on `mark_as_reviewed`:** This feature attempts to mark events as reviewed in your local Frigate NVR after successful submission to Frigate+. However, **not all Frigate versions support this via API**. If it fails, the application will continue normally - events are still submitted to Frigate+ for training. Set to `false` to disable this feature entirely.
 
 ## Usage
 

@@ -290,17 +290,11 @@ class FrigateClient:
             True if successful, False otherwise
         """
         try:
-            # Frigate review API endpoint
-            endpoint = f"{self.base_url}/api/events/{event_id}"
+            # Frigate uses POST to the review endpoint
+            endpoint = f"{self.base_url}/api/reviews/{event_id}/viewed"
             
-            # Update the event with reviewed status
-            payload = {
-                'reviewed': reviewed
-            }
-            
-            response = self.session.patch(
+            response = self.session.post(
                 endpoint,
-                json=payload,
                 timeout=self.timeout
             )
             response.raise_for_status()
@@ -308,6 +302,29 @@ class FrigateClient:
             logger.info(f"Marked event {event_id} as reviewed in Frigate")
             return True
             
+        except requests.HTTPError as e:
+            # If review endpoint doesn't exist, try alternative method
+            if e.response.status_code == 404 or e.response.status_code == 405:
+                logger.debug(f"Review endpoint not found, trying PUT method")
+                try:
+                    endpoint = f"{self.base_url}/api/events/{event_id}"
+                    payload = {'reviewed': reviewed}
+                    
+                    response = self.session.put(
+                        endpoint,
+                        json=payload,
+                        timeout=self.timeout
+                    )
+                    response.raise_for_status()
+                    logger.info(f"Marked event {event_id} as reviewed in Frigate (PUT)")
+                    return True
+                except requests.RequestException as e2:
+                    logger.debug(f"Could not mark event as reviewed (not supported by this Frigate version): {e2}")
+                    return False
+            else:
+                logger.debug(f"Could not mark event as reviewed: {e}")
+                return False
+            
         except requests.RequestException as e:
-            logger.error(f"Failed to mark event {event_id} as reviewed: {e}")
+            logger.debug(f"Could not mark event as reviewed: {e}")
             return False

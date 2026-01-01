@@ -90,7 +90,17 @@ class FrigatePlusSubmitter:
             
         except requests.HTTPError as e:
             error_msg = f"HTTP error submitting snapshot: {e}"
-            logger.error(error_msg)
+            
+            # Try to get detailed error message from response
+            error_detail = ""
+            try:
+                if e.response and e.response.text:
+                    error_detail = e.response.text
+                    logger.error(f"{error_msg} - Response: {error_detail}")
+                else:
+                    logger.error(error_msg)
+            except:
+                logger.error(error_msg)
             
             result = {
                 'success': False,
@@ -103,7 +113,8 @@ class FrigatePlusSubmitter:
                 if e.response:
                     result['error_details'] = e.response.json()
             except:
-                pass
+                if error_detail:
+                    result['error_details'] = error_detail
             
             return result
             
@@ -177,7 +188,17 @@ class FrigatePlusSubmitter:
             
         except requests.HTTPError as e:
             error_msg = f"HTTP error submitting event: {e}"
-            logger.error(error_msg)
+            
+            # Try to get detailed error message from response
+            error_detail = ""
+            try:
+                if e.response and e.response.text:
+                    error_detail = e.response.text
+                    logger.error(f"{error_msg} - Response: {error_detail}")
+                else:
+                    logger.error(error_msg)
+            except:
+                logger.error(error_msg)
             
             result = {
                 'success': False,
@@ -190,7 +211,8 @@ class FrigatePlusSubmitter:
                 if e.response:
                     result['error_details'] = e.response.json()
             except:
-                pass
+                if error_detail:
+                    result['error_details'] = error_detail
             
             return result
             
