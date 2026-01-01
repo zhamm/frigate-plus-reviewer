@@ -174,7 +174,10 @@ processing:
   dry_run: false  # Set to true to test without submitting
   state_file: "state.json"  # Track processed events
   submission_method: "snapshot"  # or "event"
+  mark_as_reviewed: true  # Mark events as reviewed in Frigate UI
 ```
+
+**Important:** `mark_as_reviewed` controls whether events are marked as reviewed in your local Frigate NVR after successful submission to Frigate+. When `true`, processed events are removed from the review queue in Frigate's UI, preventing duplicate manual reviews.
 
 ## Usage
 
@@ -282,6 +285,17 @@ For periodic execution (activate venv in the command):
 
 ## How It Works
 
+### Understanding Frigate vs Frigate+
+
+**Frigate (Local NVR)**: Your local network video recorder that detects objects
+**Frigate+ (Cloud Service)**: Cloud-based model training service that improves detection accuracy
+
+This application does **both**:
+1. Submits feedback to **Frigate+** (cloud) for model training
+2. Marks events as reviewed in **Frigate** (local) to clear your review queue
+
+### Workflow
+
 1. **Event Retrieval**: FPR queries Frigate for recent detection events within the configured lookback window
 
 2. **Filtering**: Events are filtered based on:
@@ -302,11 +316,13 @@ For periodic execution (activate venv in the command):
    - **Different label** → Mark as corrected with new label
    - **Low confidence** → Skip submission
 
-5. **Submission**: Results are submitted to Frigate+ using either:
+5. **Submission to Frigate+**: Results are submitted to Frigate+ cloud using either:
    - Snapshot submission: `/api/:camera/plus/:frame_time` (default)
    - Event submission: `/api/events/:event_id/plus`
 
-6. **State Tracking**: Processed events are recorded in `state.json` to prevent duplicates
+6. **Mark as Reviewed in Frigate**: If `mark_as_reviewed: true`, events are marked as reviewed in your local Frigate, removing them from the review queue
+
+7. **State Tracking**: Processed events are recorded in `state.json` to prevent duplicates
 
 ## Project Structure
 
@@ -454,6 +470,12 @@ pytest tests/
 - Sequential processing (no parallel vision model calls)
 
 ## Changelog
+
+### Version 1.0.2 (2026-01-01)
+- **Added**: Automatic marking of events as reviewed in Frigate NVR (configurable with `mark_as_reviewed`)
+- **Added**: `mark_event_reviewed()` method in FrigateClient
+- **Improved**: Events now removed from Frigate review queue after successful submission
+- **Improved**: Documentation explaining difference between Frigate (local) and Frigate+ (cloud)
 
 ### Version 1.0.1 (2026-01-01)
 - **Fixed**: Dry-run mode no longer marks events as processed in state.json

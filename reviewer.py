@@ -52,7 +52,8 @@ class EventReviewer:
         state_manager: StateManager,
         min_confidence: float = 0.5,
         dry_run: bool = False,
-        submission_method: str = "snapshot"
+        submission_method: str = "snapshot",
+        mark_as_reviewed: bool = True
     ):
         """
         Initialize the event reviewer.
@@ -65,6 +66,7 @@ class EventReviewer:
             min_confidence: Minimum confidence to accept a decision
             dry_run: If True, don't actually submit to Frigate+
             submission_method: "snapshot" or "event"
+            mark_as_reviewed: If True, mark events as reviewed in Frigate after submission
         """
         self.frigate_client = frigate_client
         self.vision_client = vision_client
@@ -73,6 +75,7 @@ class EventReviewer:
         self.min_confidence = min_confidence
         self.dry_run = dry_run
         self.submission_method = submission_method
+        self.mark_as_reviewed = mark_as_reviewed
     
     def make_decision(
         self,
@@ -274,6 +277,11 @@ class EventReviewer:
             
             # Submit the decision
             submission_result = self.submit_decision(event, decision)
+            
+            # Mark as reviewed in Frigate (only if successful and not dry-run)
+            if submission_result.get('success') and not submission_result.get('dry_run', False):
+                if self.mark_as_reviewed:
+                    self.frigate_client.mark_event_reviewed(event_id, reviewed=True)
             
             # Mark as processed (only if not in dry-run mode)
             if not submission_result.get('dry_run', False):

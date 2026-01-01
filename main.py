@@ -170,7 +170,8 @@ def run_once(config: dict, dry_run: bool = False):
         state_manager=state_manager,
         min_confidence=config['review_rules'].get('min_confidence', 0.5),
         dry_run=dry_run or config['processing'].get('dry_run', False),
-        submission_method=config['processing'].get('submission_method', 'snapshot')
+        submission_method=config['processing'].get('submission_method', 'snapshot'),
+        mark_as_reviewed=config['processing'].get('mark_as_reviewed', True)
     )
     
     # Get events

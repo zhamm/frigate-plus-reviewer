@@ -271,3 +271,43 @@ class FrigateClient:
         
         logger.info(f"Filtered {len(events)} events down to {len(filtered)}")
         return filtered
+    
+    def mark_event_reviewed(
+        self,
+        event_id: str,
+        reviewed: bool = True
+    ) -> bool:
+        """
+        Mark an event as reviewed in Frigate's review queue.
+        
+        This updates the local Frigate NVR, separate from Frigate+ submission.
+        
+        Args:
+            event_id: The event ID
+            reviewed: True to mark as reviewed, False to unmark
+            
+        Returns:
+            True if successful, False otherwise
+        """
+        try:
+            # Frigate review API endpoint
+            endpoint = f"{self.base_url}/api/events/{event_id}"
+            
+            # Update the event with reviewed status
+            payload = {
+                'reviewed': reviewed
+            }
+            
+            response = self.session.patch(
+                endpoint,
+                json=payload,
+                timeout=self.timeout
+            )
+            response.raise_for_status()
+            
+            logger.info(f"Marked event {event_id} as reviewed in Frigate")
+            return True
+            
+        except requests.RequestException as e:
+            logger.error(f"Failed to mark event {event_id} as reviewed: {e}")
+            return False
