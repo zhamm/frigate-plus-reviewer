@@ -1,0 +1,73 @@
+# Frigate Plus Reviewer Configuration
+
+frigate:
+  base_url: "http://FRIGATE_SERVER_IP:5000"
+  plus_api_key: "YOUR_FRIGATE_PLUS_KEY"
+  poll_interval_seconds: 60
+  event_lookback_minutes: 10
+
+vision_model:
+  # Options: "gemini" or "openai_compatible"
+  provider: "gemini"
+  
+  # For Gemini
+  api_key: "YOUR_GOOGLE_API_KEY"
+  model_name: "gemma-3-4b-it"
+  #model_name: "gemini-2.5-flash-lite"
+  # For OpenAI-compatible endpoints
+  # endpoint_url: "https://api.openai.com/v1"
+  # model_name: "gpt-4-vision-preview"
+  
+  timeout_seconds: 30
+
+review_rules:
+  # Minimum confidence threshold for detections
+  min_confidence: 0.5
+  
+  # Only review these labels (empty list = all labels)
+  allowed_labels:
+    - person
+    - car
+    - dog
+    - cat
+    - bicycle
+    - motorcycle
+  
+  # Never review these labels
+  reject_labels:
+    - shadow
+    - reflection
+  
+  # Optional: cameras to exclude
+  # exclude_cameras:
+  #   - backyard
+  
+  # Optional: cameras to include only
+  # include_cameras:
+  #   - front_door
+  #   - driveway
+
+processing:
+  # Maximum events to process per run cycle
+  max_events_per_run: 20
+  
+  # Dry run mode - don't actually submit to Frigate+
+  dry_run: false
+  
+  # State file to track processed events
+  state_file: "state.json"
+  
+  # Submission method preference: "snapshot" or "event"
+  # snapshot = submit via /api/:camera/plus/:frame_time
+  # event = submit via /api/events/:event_id/plus
+  submission_method: "snapshot"
+
+logging:
+  # Log level: DEBUG, INFO, WARNING, ERROR, CRITICAL
+  level: "INFO"
+  
+  # Log file path (optional, will also log to console)
+  file: "fpr.log"
+  
+  # Use JSON format for logs
+  json_format: false
