@@ -145,12 +145,11 @@ class GeminiVisionClient(VisionClient):
         self.model_name = model_name
         
         try:
-            import google.generativeai as genai
-            genai.configure(api_key=api_key)
-            self.model = genai.GenerativeModel(model_name)
+            from google import genai
+            self.client = genai.Client(api_key=api_key)
             logger.info(f"Initialized Gemini client with model {model_name}")
         except ImportError:
-            logger.error("google-generativeai package not installed")
+            logger.error("google-genai package not installed")
             raise
         except Exception as e:
             logger.error(f"Failed to initialize Gemini client: {e}")
@@ -173,9 +172,10 @@ class GeminiVisionClient(VisionClient):
 Please analyze this image and respond with the JSON schema specified."""
             
             # Generate response
-            response = self.model.generate_content(
-                [self.SYSTEM_PROMPT, user_prompt, image],
-                generation_config={
+            response = self.client.models.generate_content(
+                model=self.model_name,
+                contents=[self.SYSTEM_PROMPT, user_prompt, image],
+                config={
                     'temperature': 0.1,
                     'top_p': 0.95,
                     'top_k': 40,
